@@ -1,0 +1,29 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        container:
+        # Official Node.js images.
+        - node:12
+        - node:14
+        - node:16
+        # RHEL Node.js builds are icu_small without installing the
+        # optional nodejs-full-i18n rpm.
+        - registry.access.redhat.com/ubi8/nodejs-12
+        - registry.access.redhat.com/ubi8/nodejs-14
+        - registry.access.redhat.com/ubi8/nodejs-16
+    container:
+      image: "${{ matrix.container }}"
+      # Need to specify user for the official node images otherwise
+      # npm warns `cannot run in wd` and fails to install.
+      options: "--user 1001"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: npm i
+    - run: npm run test
